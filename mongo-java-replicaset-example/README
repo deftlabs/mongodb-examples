@@ -1,0 +1,54 @@
+
+About
+=======================================
+
+A simple Mongo replica set setup example using Mongo/Java/Ant.
+
+See: http://www.mongodb.org/display/DOCS/Replica+Sets
+
+Prerequisites
+=======================================
+
+You must have Ant installed and in your $PATH.
+
+You must have Mongo installed and the bin files in your $PATH.
+
+Running
+=======================================
+
+Open three terminal windows and run one command in each:
+
+ant mongo0
+ant mongo1
+ant arbiter0
+
+This runs three instances of Mongo on your machine on ports 27017, 27018 and 27019.
+
+In another terminal run:
+
+ant run
+
+This command will initialize your replica set and run a couple of simple tests. This command
+takes a while to run because it waits for 30 seconds to make sure the replica set is OK.
+
+Note: If you run "ant clean" this deletes the temp database files stored in build/*.
+
+Note: This was last tested with 2.0.0.
+
+License
+=======================================
+
+Copyright 2011, Deft Labs.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at:
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+

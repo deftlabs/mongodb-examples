@@ -1,0 +1,169 @@
+<?xml version="1.0"?>
+
+<!--
+Copyright 2011, Deft Labs.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at:
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<project name="mongo-java-replicaset-example" default="usage" basedir="./" xmlns:aspectj="antlib:org.aspectj">
+
+    <!-- ******************************************************************* -->
+    <!-- Set the base attributes.                                            -->
+    <!-- ******************************************************************* -->
+
+    <property name="dir.build" value="build"/>
+    <property name="dir.build.java" value="${dir.build}/java/classes"/>
+
+    <property name="dir.src" value="src"/>
+    <property name="dir.src.java" value="src/main"/>
+    <property name="dir.lib" value="lib"/>
+
+    <property file="build.properties" prefix="build.conf"/>
+
+    <property environment="env"/>
+
+    <path id="classpath.all"><fileset dir="${dir.lib}"><include name="*.jar"/></fileset></path>
+    <path id="classpath.cp"><pathelement location="${dir.build.java}"/></path>
+
+    <!-- ******************************************************************* -->
+    <!-- Remove the build directory.                                         -->
+    <!-- ******************************************************************* -->
+
+    <target name="clean"><delete dir="${dir.build}"/></target>
+
+    <!-- ******************************************************************* -->
+    <!-- Compile the java classes.                                           -->
+    <!-- ******************************************************************* -->
+
+    <target name="compile">
+        <mkdir dir="${dir.build.java}"/>
+        <javac  destdir="${dir.build.java}"
+                target="${build.conf.javac.source}"
+                debug="true" encoding="UTF-8"
+                classpathref="classpath.cp"
+                source="${build.conf.javac.source}"
+                includeantruntime="false"
+                debuglevel="lines,vars,source">
+
+            <src path="${dir.src.java}"/>
+            <compilerarg value="-Xlint:all,-fallthrough"/>
+            <classpath refid="classpath.all"/>
+        </javac>
+    </target>
+
+    <!-- ******************************************************************* -->
+    <!-- Run the examples. Mongo must be running to work.                    -->
+    <!-- ******************************************************************* -->
+
+    <target name="run" depends="compile">
+
+        <junit fork="yes" haltonfailure="true">
+            <jvmarg value="-Duser.timezone=GMT"/>
+            <jvmarg value="-Dfile.encoding=UTF-8"/>
+            <classpath refid="classpath.all"/>
+
+            <classpath><pathelement path="${dir.build.java}"/></classpath>
+
+            <formatter type="brief" usefile="false"/>
+
+            <batchtest todir=".">
+                <fileset dir="${dir.build.java}">
+                    <include name="**/*Example.class"/>
+                </fileset>
+            </batchtest>
+        </junit>
+    </target>
+
+    <!-- ******************************************************************* -->
+    <!-- Run the first mongo server.                                         -->
+    <!-- ******************************************************************* -->
+
+    <target name="mongo0">
+        <antcall target="mongo">
+            <param name="mongo.port" value="27017"/>
+            <param name="mongo.dir.db" value="${dir.build}/data/r0"/>
+        </antcall>
+    </target>
+
+    <!-- ******************************************************************* -->
+    <!-- Run the second mongo server.                                        -->
+    <!-- ******************************************************************* -->
+
+    <target name="mongo1">
+        <antcall target="mongo">
+            <param name="mongo.port" value="27018"/>
+            <param name="mongo.dir.db" value="${dir.build}/data/r1"/>
+        </antcall>
+    </target>
+
+    <!-- ******************************************************************* -->
+    <!-- Run the arbiter server.                                             -->
+    <!-- ******************************************************************* -->
+
+    <target name="arbiter0">
+        <antcall target="mongo">
+            <param name="mongo.port" value="27019"/>
+            <param name="mongo.dir.db" value="${dir.build}/data/a0"/>
+        </antcall>
+    </target>
+
+    <!-- ******************************************************************* -->
+    <!-- Run a mongo server (expects params).                                -->
+    <!-- ******************************************************************* -->
+
+    <target name="mongo">
+        <mkdir dir="${mongo.dir.db}"/>
+        <exec executable="mongod">
+            <arg value="--replSet"/>
+            <arg value="test"/>
+            <arg value="--rest"/>
+            <arg value="--port"/>
+            <arg value="${mongo.port}"/>
+            <arg value="--dbpath"/>
+            <arg value="${mongo.dir.db}"/>
+
+            <!--
+            <arg value=" - -keyFile"/>
+            <arg value="mykey"/>
+            -->
+        </exec>
+    </target>
+
+    <!-- ******************************************************************* -->
+    <!-- Describe the build file usage.                                      -->
+    <!-- ******************************************************************* -->
+
+    <target name="usage">
+<echo>
+----------------------------------------
+
+- Compile the Java files ......................... compile
+
+- Clean the source tree .......................... clean (deletes Mongo db files too)
+
+- Run the first Mongo server ..................... mongo0
+
+- Run the second Mongo server .................... mongo1
+
+- Run the third Mongo server ..................... mongo2
+
+- Run the examples ............................... run
+
+----------------------------------------
+</echo>
+    </target>
+
+    <!-- ******************************************************************* -->
+
+</project>

@@ -1,0 +1,214 @@
+<?xml version="1.0"?>
+
+<!--
+Copyright 2011, Deft Labs.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at:
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<project name="mongo-java-sharding-replicaset-example" default="usage" basedir="./" xmlns:aspectj="antlib:org.aspectj">
+
+    <!-- ******************************************************************* -->
+    <!-- Set the base attributes.                                            -->
+    <!-- ******************************************************************* -->
+
+    <property name="dir.build" value="build"/>
+    <property name="dir.build.java" value="${dir.build}/java/classes"/>
+
+    <property name="dir.src" value="src"/>
+    <property name="dir.src.java" value="src/main"/>
+    <property name="dir.lib" value="lib"/>
+
+    <property file="build.properties" prefix="build.conf"/>
+
+    <property environment="env"/>
+
+    <path id="classpath.all"><fileset dir="${dir.lib}"><include name="*.jar"/></fileset></path>
+    <path id="classpath.cp"><pathelement location="${dir.build.java}"/></path>
+
+    <!-- ******************************************************************* -->
+    <!-- Remove the build directory.                                         -->
+    <!-- ******************************************************************* -->
+
+    <target name="clean"><delete dir="${dir.build}"/></target>
+    
+    <!-- ******************************************************************* -->
+    <!-- Compile the java classes.                                           -->
+    <!-- ******************************************************************* -->
+
+    <target name="compile"> 
+        <mkdir dir="${dir.build.java}"/>
+        <javac  destdir="${dir.build.java}"
+                target="${build.conf.javac.source}" 
+                debug="true" encoding="UTF-8" 
+                classpathref="classpath.cp" 
+                source="${build.conf.javac.source}" 
+                includeantruntime="false" 
+                debuglevel="lines,vars,source">
+
+            <src path="${dir.src.java}"/>
+            <compilerarg value="-Xlint:all,-fallthrough"/>
+            <classpath refid="classpath.all"/> 
+        </javac>
+    </target>
+
+    <!-- ******************************************************************* -->
+    <!-- Run the examples. Mongo must be running to work.                    -->
+    <!-- ******************************************************************* -->
+
+    <target name="run" depends="compile">
+        
+        <junit fork="yes" haltonfailure="true"> 
+            <jvmarg value="-Duser.timezone=GMT"/>
+            <jvmarg value="-Dfile.encoding=UTF-8"/>
+            <classpath refid="classpath.all"/>
+            
+            <classpath><pathelement path="${dir.build.java}"/></classpath>
+
+            <formatter type="brief" usefile="false"/>
+
+            <batchtest todir=".">
+                <fileset dir="${dir.build.java}">
+                    <include name="**/*Example.class"/>
+                </fileset>
+            </batchtest>
+        </junit>
+    </target>
+
+    <!-- ******************************************************************* -->
+    <!-- Run the first mongo shard server.                                   -->
+    <!-- ******************************************************************* -->
+    
+    <target name="mongo-shard-0"> 
+        <antcall target="mongo-shard">
+            <param name="mongo.port" value="27018"/>
+            <param name="mongo.dir.db" value="${dir.build}/data/shard0"/>
+            <param name="mongo.replica.set.name" value="shard0ReplicaSet"/>
+        </antcall>
+    </target>
+
+    <!-- ******************************************************************* -->
+    <!-- Run the first mongo shard server (replica).                         -->
+    <!-- ******************************************************************* -->
+    
+    <target name="mongo-shard-0a"> 
+        <antcall target="mongo-shard">
+            <param name="mongo.port" value="27019"/>
+            <param name="mongo.dir.db" value="${dir.build}/data/shard0a"/>
+            <param name="mongo.replica.set.name" value="shard0ReplicaSet"/>
+        </antcall>
+    </target>
+
+    <!-- ******************************************************************* -->
+    <!-- Run the second mongo shard server.                                  -->
+    <!-- ******************************************************************* -->
+    
+    <target name="mongo-shard-1"> 
+        <antcall target="mongo-shard">
+            <param name="mongo.port" value="27020"/>
+            <param name="mongo.dir.db" value="${dir.build}/data/shard1"/>
+            <param name="mongo.replica.set.name" value="shard1ReplicaSet"/>
+        </antcall>
+    </target>
+
+    <!-- ******************************************************************* -->
+    <!-- Run the second mongo shard server (replica).                        -->
+    <!-- ******************************************************************* -->
+    
+    <target name="mongo-shard-1a"> 
+        <antcall target="mongo-shard">
+            <param name="mongo.port" value="27021"/>
+            <param name="mongo.dir.db" value="${dir.build}/data/shard1a"/>
+            <param name="mongo.replica.set.name" value="shard1ReplicaSet"/>
+        </antcall>
+    </target>
+
+    <!-- ******************************************************************* -->
+    <!-- Run a mongo shard server (expects params).                          -->
+    <!-- ******************************************************************* -->
+    
+    <target name="mongo-shard"> 
+        <mkdir dir="${mongo.dir.db}"/>
+        <exec executable="mongod">
+            <arg value="--rest"/>
+            <arg value="--replSet"/>
+            <arg value="${mongo.replica.set.name}"/>
+            <arg value="--port"/>
+            <arg value="${mongo.port}"/>
+            <arg value="--dbpath"/>
+            <arg value="${mongo.dir.db}"/>
+        </exec>
+    </target>
+
+    <!-- ******************************************************************* -->
+    <!-- Run a mongo config server.                                          -->
+    <!-- ******************************************************************* -->
+    
+    <target name="mongo-config"> 
+        <mkdir dir="${dir.build}/data/config"/>
+        <exec executable="mongod">
+            <arg value="--configsvr"/>
+            <arg value="--rest"/>
+            <arg value="--port"/>
+            <arg value="27022"/>
+            <arg value="--dbpath"/>
+            <arg value="${dir.build}/data/config"/>
+        </exec>
+    </target>
+
+    <!-- ******************************************************************* -->
+    <!-- Run a mongos server.                                                -->
+    <!-- ******************************************************************* -->
+    
+    <target name="mongos"> 
+        <exec executable="mongos">
+            <arg value="--configdb"/>
+            <arg value="localhost:27022"/>
+            <arg value="--chunkSize"/>
+            <arg value="1"/>
+        </exec>
+    </target>
+
+    <!-- ******************************************************************* -->
+    <!-- Describe the build file usage.                                      -->
+    <!-- ******************************************************************* -->
+
+    <target name="usage">
+<echo>
+----------------------------------------
+
+- Compile the Java files ......................... compile
+
+- Clean the source tree .......................... clean (deletes Mongo db files too)
+
+- Run the first Mongo shard server ............... mongo-shard-0
+
+- Run the first Mongo shard replica server ....... mongo-shard-0a
+
+- Run the second Mongo shard server .............. mongo-shard-1
+
+- Run the second Mongo shard replica server ...... mongo-shard-1a
+
+- Run the Mongo config server .................... mongo-config
+
+- Run the mongos  server ......................... mongos
+
+- Run the examples ............................... run
+
+----------------------------------------
+</echo>
+    </target>
+
+    <!-- ******************************************************************* -->
+
+</project>

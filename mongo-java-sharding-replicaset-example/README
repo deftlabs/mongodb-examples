@@ -1,0 +1,71 @@
+
+About
+=======================================
+
+A simple Mongo sharding (with replica sets) setup example using Mongo/Java/Ant.
+
+See: http://www.mongodb.org/display/DOCS/Sharding and http://www.mongodb.org/display/DOCS/Replica+Sets
+
+Prerequisites
+=======================================
+
+You must have Ant installed and in your $PATH.
+
+You must have Mongo installed and the bin files in your $PATH.
+
+Running
+=======================================
+
+Open six terminal windows and run one command in each:
+
+ant mongo-shard-0
+
+ant mongo-shard-0a
+
+ant mongo-shard-1
+
+ant mongo-shard-1a
+
+ant mongo-config
+
+ant mongos
+
+This runs two shard servers (four if you include the replicas), a config and mongos server(s).
+
+The ports are:
+
+    * mongo-shard-0  : 27018
+    * mongo-shard-0a : 27019 (this is a replica of mongo-shard-0)
+    * mongo-shard-1  : 27020
+    * mongo-shard-1a : 27021 (this is a replica of mongo-shard-1)
+    * mongo-config   : 27022
+    * mongos         : 27017
+
+In another terminal run:
+
+ant run
+
+This command will initialize your replica sets, shard cluster and run a couple of simple tests. This command
+takes a while to run because it waits (sleeps) to make sure the replica sets and cluster are setup.
+
+Note: If you run "ant clean" this deletes the temp database files stored in build/*.
+
+Note: This was written/tested with 1.7.5-pre- (2011-01-04 - nightly build).
+
+License
+=======================================
+
+Copyright 2011, Deft Labs.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at:
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
