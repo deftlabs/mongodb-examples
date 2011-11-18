@@ -37,8 +37,6 @@ import java.util.ArrayList;
  */
 public final class TailableCursorExample {
 
-    private Mongo _mongo;
-
     public static void main(final String [] pArgs) throws Exception {
         final Mongo mongo = new Mongo(new MongoURI("mongodb://127.0.0.1:27017"));
 
@@ -61,10 +59,8 @@ public final class TailableCursorExample {
         for (int idx=0; idx < 10; idx++) {
             final Thread writeThread = new Thread(new Writer(mongo, writeRunning, writeCounter));
             final Thread readThread = new Thread(new Reader(mongo, readRunning, readCounter));
-
             writeThread.start();
             readThread.start();
-
             writeThreads.add(writeThread);
             readThreads.add(readThread);
         }
@@ -72,13 +68,9 @@ public final class TailableCursorExample {
         // Run for five minutes
         //Thread.sleep(300000);
         Thread.sleep(20000);
-
         writeRunning.set(false);
-
         Thread.sleep(5000);
-
         readRunning.set(false);
-
         Thread.sleep(5000);
 
         for (final Thread readThread : readThreads) readThread.interrupt();
@@ -95,27 +87,19 @@ public final class TailableCursorExample {
         @Override
         public void run() {
             final HashSet<ObjectId> seenIds = new HashSet<ObjectId>();
-
             long lastTimestamp = 0;
 
             while (_running.get()) {
                 try {
                     _mongo.getDB("testTailableCursor").requestStart();
-
                     final DBCursor cur = createCursor(lastTimestamp);
-
                     try {
                         while (cur.hasNext() && _running.get()) {
                             final BasicDBObject doc = (BasicDBObject)cur.next();
-
                             final ObjectId docId = doc.getObjectId("_id");
-
                             lastTimestamp = doc.getLong("ts");
-
                             if (seenIds.contains(docId)) System.out.println("------ duplicate id found: " + docId);
-
                             seenIds.add(docId);
-
                             _counter.incrementAndGet();
                         }
                     } finally {
@@ -124,7 +108,6 @@ public final class TailableCursorExample {
                     }
 
                     try { Thread.sleep(100); } catch (final InterruptedException ie) { break; }
-
                 } catch (final Throwable t) { t.printStackTrace(); }
             }
         }
@@ -139,16 +122,12 @@ public final class TailableCursorExample {
             return col.find(query).sort(new BasicDBObject("$natural", 1)).addOption(Bytes.QUERYOPTION_TAILABLE).addOption(Bytes.QUERYOPTION_AWAITDATA);
         }
 
-        private Reader(final Mongo pMongo, final AtomicBoolean pRunning, final AtomicLong pCounter) {
-            _mongo = pMongo;
-            _running = pRunning;
-            _counter = pCounter;
-        }
+        private Reader(final Mongo pMongo, final AtomicBoolean pRunning, final AtomicLong pCounter)
+        { _mongo = pMongo; _running = pRunning; _counter = pCounter; }
 
         private final Mongo _mongo;
         private final AtomicBoolean _running;
         private final AtomicLong _counter;
-
     }
 
     /**
@@ -167,11 +146,8 @@ public final class TailableCursorExample {
             }
         }
 
-        private Writer(final Mongo pMongo, final AtomicBoolean pRunning, final AtomicLong pCounter) {
-            _mongo = pMongo;
-            _running = pRunning;
-            _counter = pCounter;
-        }
+        private Writer(final Mongo pMongo, final AtomicBoolean pRunning, final AtomicLong pCounter)
+        { _mongo = pMongo; _running = pRunning; _counter = pCounter; }
 
         private final Mongo _mongo;
         private final AtomicBoolean _running;
