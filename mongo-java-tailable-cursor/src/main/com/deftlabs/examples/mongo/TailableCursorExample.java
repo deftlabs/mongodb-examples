@@ -20,6 +20,7 @@ package com.deftlabs.examples.mongo;
 import com.mongodb.Mongo;
 import com.mongodb.MongoURI;
 import com.mongodb.Bytes;
+import com.mongodb.DBCollection;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCursor;
 import org.bson.BasicBSONObject;
@@ -58,7 +59,6 @@ public final class TailableCursorExample {
         final ArrayList<Thread> readThreads = new ArrayList<Thread>();
 
         for (int idx=0; idx < 10; idx++) {
-
             final Thread writeThread = new Thread(new Writer(mongo, writeRunning, writeCounter));
             final Thread readThread = new Thread(new Reader(mongo, readRunning, readCounter));
 
@@ -96,11 +96,13 @@ public final class TailableCursorExample {
         public void run() {
             final HashSet<ObjectId> seenIds = new HashSet<ObjectId>();
 
+            long lastTimestamp = 0;
+
             while (_running.get()) {
                 try {
                     _mongo.getDB("testTailableCursor").requestStart();
-                    final DBCursor cur
-                    = _mongo.getDB("testTailableCursor").getCollection("test").find().sort(new BasicDBObject("$natural", 1)).addOption(Bytes.QUERYOPTION_TAILABLE);
+
+                    final DBCursor cur = createCursor(lastTimestamp);
 
                     try {
                         while (cur.hasNext() && _running.get()) {
@@ -108,21 +110,33 @@ public final class TailableCursorExample {
 
                             final ObjectId docId = doc.getObjectId("_id");
 
+                            lastTimestamp = doc.getLong("ts");
+
                             if (seenIds.contains(docId)) System.out.println("------ duplicate id found: " + docId);
 
                             seenIds.add(docId);
 
                             _counter.incrementAndGet();
                         }
-
-                        System.out.println("----- reader outside of cursor loop");
-
                     } finally {
-                        if (cur != null) cur.close();
+                        try { if (cur != null) cur.close(); } catch (final Throwable t) { /* nada */ }
                         _mongo.getDB("testTailableCursor").requestDone();
                     }
+
+                    try { Thread.sleep(100); } catch (final InterruptedException ie) { break; }
+
                 } catch (final Throwable t) { t.printStackTrace(); }
             }
+        }
+
+        private DBCursor createCursor(final long pLast) {
+            final DBCollection col = _mongo.getDB("testTailableCursor").getCollection("test");
+
+            if (pLast == 0)
+            { return col.find().sort(new BasicDBObject("$natural", 1)).addOption(Bytes.QUERYOPTION_TAILABLE).addOption(Bytes.QUERYOPTION_AWAITDATA); }
+
+            final BasicDBObject query = new BasicDBObject("ts", new BasicDBObject("$gt", pLast));
+            return col.find(query).sort(new BasicDBObject("$natural", 1)).addOption(Bytes.QUERYOPTION_TAILABLE).addOption(Bytes.QUERYOPTION_AWAITDATA);
         }
 
         private Reader(final Mongo pMongo, final AtomicBoolean pRunning, final AtomicLong pCounter) {
@@ -148,8 +162,8 @@ public final class TailableCursorExample {
                 final BasicDBObject doc = new BasicDBObject("_id", docId);
                 final long count = _counter.incrementAndGet();
                 doc.put("count", count);
+                doc.put("ts", System.currentTimeMillis());
                 _mongo.getDB("testTailableCursor").getCollection("test").insert(doc);
-
             }
         }
 
