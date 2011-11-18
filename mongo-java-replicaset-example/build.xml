@@ -79,7 +79,30 @@ limitations under the License.
 
             <batchtest todir=".">
                 <fileset dir="${dir.build.java}">
-                    <include name="**/*Example.class"/>
+                    <include name="**/ReplicaSetExample.class"/>
+                </fileset>
+            </batchtest>
+        </junit>
+    </target>
+
+    <!-- ******************************************************************* -->
+    <!-- Run the examples. Mongo must be running to work.                    -->
+    <!-- ******************************************************************* -->
+
+    <target name="run-two" depends="compile">
+
+        <junit fork="yes" haltonfailure="true">
+            <jvmarg value="-Duser.timezone=GMT"/>
+            <jvmarg value="-Dfile.encoding=UTF-8"/>
+            <classpath refid="classpath.all"/>
+
+            <classpath><pathelement path="${dir.build.java}"/></classpath>
+
+            <formatter type="brief" usefile="false"/>
+
+            <batchtest todir=".">
+                <fileset dir="${dir.build.java}">
+                    <include name="**/ReplicaSetTwoSecondariesExample.class"/>
                 </fileset>
             </batchtest>
         </junit>
@@ -106,6 +129,18 @@ limitations under the License.
             <param name="mongo.dir.db" value="${dir.build}/data/r1"/>
         </antcall>
     </target>
+
+    <!-- ******************************************************************* -->
+    <!-- Run the thrid mongo server - do not run with arbiter                -->
+    <!-- ******************************************************************* -->
+
+    <target name="mongo2">
+        <antcall target="mongo">
+            <param name="mongo.port" value="27019"/>
+            <param name="mongo.dir.db" value="${dir.build}/data/r2"/>
+        </antcall>
+    </target>
+
 
     <!-- ******************************************************************* -->
     <!-- Run the arbiter server.                                             -->
