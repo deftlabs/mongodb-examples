@@ -16,7 +16,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<project name="~/rnf/work/dev/mongo-java-driver-intro" default="usage" basedir="./" xmlns:aspectj="antlib:org.aspectj">
+<project name="mongo-java-driver-intro" default="usage" basedir="./" xmlns:aspectj="antlib:org.aspectj">
 
     <!-- ******************************************************************* -->
     <!-- Set the base attributes.                                            -->
