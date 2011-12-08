@@ -137,6 +137,35 @@ public final class UpdateExample {
         assertEquals(2, foundDoc.get("foo"));
     }
 
+    /**
+     * A find and modify example.
+     */
+    @Test
+    public void findAndModify() throws Exception {
+
+        // Drop the database
+        _mongo.getDB("mongo-java-driver-intro").dropDatabase();
+
+        // Insert a doc
+        final ObjectId docId = ObjectId.get();
+        final DBObject doc = BasicDBObjectBuilder.start().add("_id", docId).add("foo", 1).get();
+        _mongo.getDB("mongo-java-driver-intro").getCollection("updateExamples").insert(doc);
+
+        // Confirm it was inserted
+        DBObject foundDoc = _mongo.getDB("mongo-java-driver-intro").getCollection("updateExamples").findOne();
+        assertNotNull(foundDoc);
+
+        final BasicDBObject query = new BasicDBObject("_id", docId);
+        final BasicDBObject update = new BasicDBObject("$set", new BasicDBObject("foo", 10));
+
+        final DBObject modifiedDoc
+        = _mongo.getDB("mongo-java-driver-intro").getCollection("updateExamples").findAndModify(query, null, null, false, update, true, false);
+
+        assertNotNull(modifiedDoc);
+
+        // Confirm it was updated
+        assertEquals(10, modifiedDoc.get("foo"));
+    }
 
     @BeforeClass
     public static void start() throws Exception {
