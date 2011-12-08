@@ -45,7 +45,9 @@ public final class QueryExample {
      */
     @Test
     public void simpleFindOne() throws Exception {
-        final DBObject doc = _mongo.getDB("mongo-java-driver-intro").getCollection("queryExamples").findOne(new BasicDBObject("_id", 1));
+        final BasicDBObject doc = 
+        (BasicDBObject)_mongo.getDB("mongo-java-driver-intro").getCollection("queryExamples")
+        .findOne(new BasicDBObject("_id", 1));
         assertNotNull(doc);
     }
 
@@ -57,7 +59,8 @@ public final class QueryExample {
         final BasicDBObject query = new BasicDBObject("_id", 1);
         final BasicDBObject fields = new BasicDBObject("testId", 1);
 
-        final DBObject doc = _mongo.getDB("mongo-java-driver-intro").getCollection("queryExamples").findOne(query, fields);
+        final DBObject doc
+        = _mongo.getDB("mongo-java-driver-intro").getCollection("queryExamples").findOne(query, fields);
         assertNotNull(doc);
 
         assertNotNull(doc.get("testId"));
@@ -89,7 +92,8 @@ public final class QueryExample {
     public void findMultipleCurWalk() throws Exception {
         DBCursor cur = null;
         try {
-            cur = _mongo.getDB("mongo-java-driver-intro").getCollection("queryExamples").find().sort(new BasicDBObject("_id", 1));
+            cur = _mongo.getDB("mongo-java-driver-intro").getCollection("queryExamples")
+            .find().sort(new BasicDBObject("_id", 1)).batchSize(10);
 
             assertNotNull(cur);
 

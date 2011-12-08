@@ -127,7 +127,8 @@ public final class UpdateExample {
         final BasicDBObject toIncrement = new BasicDBObject("foo", 1);
         final BasicDBObject update = new BasicDBObject("$inc", toIncrement);
 
-        _mongo.getDB("mongo-java-driver-intro").getCollection("updateExamples").update(updateQuery, update, false, false);
+        _mongo.getDB("mongo-java-driver-intro")
+        .getCollection("updateExamples").update(updateQuery, update, false, false);
 
         // Load the saved doc
         foundDoc = _mongo.getDB("mongo-java-driver-intro").getCollection("updateExamples").findOne();
@@ -159,7 +160,13 @@ public final class UpdateExample {
         final BasicDBObject update = new BasicDBObject("$set", new BasicDBObject("foo", 10));
 
         final DBObject modifiedDoc
-        = _mongo.getDB("mongo-java-driver-intro").getCollection("updateExamples").findAndModify(query, null, null, false, update, true, false);
+        = _mongo.getDB("mongo-java-driver-intro").getCollection("updateExamples").findAndModify(query,
+                                                                                                null,
+                                                                                                null,
+                                                                                                false,
+                                                                                                update,
+                                                                                                true,
+                                                                                                false);
 
         assertNotNull(modifiedDoc);
 

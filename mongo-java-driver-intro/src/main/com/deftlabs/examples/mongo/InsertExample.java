@@ -50,11 +50,17 @@ public final class InsertExample {
         final ObjectId newDocId = ObjectId.get();
 
         // Insert the document
-        final DBObject doc = BasicDBObjectBuilder.start().add("_id", newDocId).add("testId", ObjectId.get()).add("foo", "bar").get();
+        final DBObject doc = BasicDBObjectBuilder.start().add("_id", newDocId)
+        .add("testId", ObjectId.get())
+        .add("foo", "bar").get();
+
         _mongo.getDB("mongo-java-driver-intro").getCollection("insertExamples").insert(doc);
 
         // Lookup the same document
-        final DBObject foundDoc = _mongo.getDB("mongo-java-driver-intro").getCollection("insertExamples").findOne(new BasicDBObject("_id", newDocId));
+        final DBObject foundDoc
+        = _mongo.getDB("mongo-java-driver-intro").getCollection("insertExamples").
+        findOne(new BasicDBObject("_id", newDocId));
+
         assertNotNull(foundDoc);
     }
 

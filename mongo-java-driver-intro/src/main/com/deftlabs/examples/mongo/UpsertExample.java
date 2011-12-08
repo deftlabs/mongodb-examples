@@ -53,10 +53,12 @@ public final class UpsertExample {
 
         // Create the values to set.
         DBObject toSet = BasicDBObjectBuilder.start().add("testId", testId).add("foo", "bar").get();
-        _mongo.getDB("mongo-java-driver-intro").getCollection("upsertExamples").update(query, new BasicDBObject("$set", toSet), true, false);
+        _mongo.getDB("mongo-java-driver-intro").getCollection("upsertExamples")
+        .update(query, new BasicDBObject("$set", toSet), true, false);
 
         // Confirm the document was inserted
-        DBObject foundDoc = _mongo.getDB("mongo-java-driver-intro").getCollection("upsertExamples").findOne(new BasicDBObject("_id", docId));
+        DBObject foundDoc 
+        = _mongo.getDB("mongo-java-driver-intro").getCollection("upsertExamples").findOne(new BasicDBObject("_id", docId));
         assertNotNull(foundDoc);
 
         // Confirm the values
@@ -68,7 +70,8 @@ public final class UpsertExample {
         final ObjectId newTestId = ObjectId.get();
 
         toSet = BasicDBObjectBuilder.start().add("testId", newTestId).add("foo", "notbar").get();
-        _mongo.getDB("mongo-java-driver-intro").getCollection("upsertExamples").update(query, new BasicDBObject("$set", toSet), true, false);
+        _mongo.getDB("mongo-java-driver-intro").getCollection("upsertExamples")
+        .update(query, new BasicDBObject("$set", toSet), true, false);
 
         // Confirm the document was updated
         foundDoc = _mongo.getDB("mongo-java-driver-intro").getCollection("upsertExamples").findOne(new BasicDBObject("_id", docId));
