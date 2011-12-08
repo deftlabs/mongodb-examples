@@ -81,7 +81,7 @@ public final class ConnectionExample {
         // options.dbEncoderFactory =
         // options.socketFactory =
 
-        final Mongo mongo = new Mongo(new ServerAddress("127.0.0.1", 27017));
+        final Mongo mongo = new Mongo(new ServerAddress("127.0.0.1", 27017), options);
         assertNotNull(mongo);
     }
 
