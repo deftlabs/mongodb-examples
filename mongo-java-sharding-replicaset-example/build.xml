@@ -41,24 +41,24 @@ limitations under the License.
     <!-- ******************************************************************* -->
 
     <target name="clean"><delete dir="${dir.build}"/></target>
-    
+
     <!-- ******************************************************************* -->
     <!-- Compile the java classes.                                           -->
     <!-- ******************************************************************* -->
 
-    <target name="compile"> 
+    <target name="compile">
         <mkdir dir="${dir.build.java}"/>
         <javac  destdir="${dir.build.java}"
-                target="${build.conf.javac.source}" 
-                debug="true" encoding="UTF-8" 
-                classpathref="classpath.cp" 
-                source="${build.conf.javac.source}" 
-                includeantruntime="false" 
+                target="${build.conf.javac.source}"
+                debug="true" encoding="UTF-8"
+                classpathref="classpath.cp"
+                source="${build.conf.javac.source}"
+                includeantruntime="false"
                 debuglevel="lines,vars,source">
 
             <src path="${dir.src.java}"/>
             <compilerarg value="-Xlint:all,-fallthrough"/>
-            <classpath refid="classpath.all"/> 
+            <classpath refid="classpath.all"/>
         </javac>
     </target>
 
@@ -67,12 +67,17 @@ limitations under the License.
     <!-- ******************************************************************* -->
 
     <target name="run" depends="compile">
-        
-        <junit fork="yes" haltonfailure="true"> 
+
+        <junit fork="yes" haltonfailure="true">
             <jvmarg value="-Duser.timezone=GMT"/>
             <jvmarg value="-Dfile.encoding=UTF-8"/>
+
+            <jvmarg value="-DsocksProxyHost"/>
+            <jvmarg value="-DsocksProxtPort"/>
+            <jvmarg value="-Dhttps.proxyHost"/>
+            <jvmarg value="-Dhttp.proxyHost"/>
             <classpath refid="classpath.all"/>
-            
+
             <classpath><pathelement path="${dir.build.java}"/></classpath>
 
             <formatter type="brief" usefile="false"/>
@@ -88,8 +93,8 @@ limitations under the License.
     <!-- ******************************************************************* -->
     <!-- Run the first mongo shard server.                                   -->
     <!-- ******************************************************************* -->
-    
-    <target name="mongo-shard-0"> 
+
+    <target name="mongo-shard-0">
         <antcall target="mongo-shard">
             <param name="mongo.port" value="27018"/>
             <param name="mongo.dir.db" value="${dir.build}/data/shard0"/>
@@ -100,8 +105,8 @@ limitations under the License.
     <!-- ******************************************************************* -->
     <!-- Run the first mongo shard server (replica).                         -->
     <!-- ******************************************************************* -->
-    
-    <target name="mongo-shard-0a"> 
+
+    <target name="mongo-shard-0a">
         <antcall target="mongo-shard">
             <param name="mongo.port" value="27019"/>
             <param name="mongo.dir.db" value="${dir.build}/data/shard0a"/>
@@ -112,8 +117,8 @@ limitations under the License.
     <!-- ******************************************************************* -->
     <!-- Run the second mongo shard server.                                  -->
     <!-- ******************************************************************* -->
-    
-    <target name="mongo-shard-1"> 
+
+    <target name="mongo-shard-1">
         <antcall target="mongo-shard">
             <param name="mongo.port" value="27020"/>
             <param name="mongo.dir.db" value="${dir.build}/data/shard1"/>
@@ -124,8 +129,8 @@ limitations under the License.
     <!-- ******************************************************************* -->
     <!-- Run the second mongo shard server (replica).                        -->
     <!-- ******************************************************************* -->
-    
-    <target name="mongo-shard-1a"> 
+
+    <target name="mongo-shard-1a">
         <antcall target="mongo-shard">
             <param name="mongo.port" value="27021"/>
             <param name="mongo.dir.db" value="${dir.build}/data/shard1a"/>
@@ -136,8 +141,8 @@ limitations under the License.
     <!-- ******************************************************************* -->
     <!-- Run a mongo shard server (expects params).                          -->
     <!-- ******************************************************************* -->
-    
-    <target name="mongo-shard"> 
+
+    <target name="mongo-shard">
         <mkdir dir="${mongo.dir.db}"/>
         <exec executable="mongod">
             <arg value="--rest"/>
@@ -153,8 +158,8 @@ limitations under the License.
     <!-- ******************************************************************* -->
     <!-- Run a mongo config server.                                          -->
     <!-- ******************************************************************* -->
-    
-    <target name="mongo-config"> 
+
+    <target name="mongo-config">
         <mkdir dir="${dir.build}/data/config"/>
         <exec executable="mongod">
             <arg value="--configsvr"/>
@@ -169,8 +174,8 @@ limitations under the License.
     <!-- ******************************************************************* -->
     <!-- Run a mongos server.                                                -->
     <!-- ******************************************************************* -->
-    
-    <target name="mongos"> 
+
+    <target name="mongos">
         <exec executable="mongos">
             <arg value="--configdb"/>
             <arg value="localhost:27022"/>
