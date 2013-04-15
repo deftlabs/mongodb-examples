@@ -16,41 +16,34 @@ You must have Mongo installed and the bin files in your $PATH.
 Running
 =======================================
 
-Open six terminal windows and run one command in each:
+Open a terminal window and run:
 
-ant mongo-shard-0
+* ant run
 
-ant mongo-shard-0a
-
-ant mongo-shard-1
-
-ant mongo-shard-1a
-
-ant mongo-config
-
-ant mongos
-
-This runs two shard servers (four if you include the replicas), a config and mongos server(s).
+This runs two shard servers (four including the replicas), two arbiters, three config servers and a single mongos server.
 
 The ports are:
 
-    * mongo-shard-0  : 27018
-    * mongo-shard-0a : 27019 (this is a replica of mongo-shard-0)
-    * mongo-shard-1  : 27020
-    * mongo-shard-1a : 27021 (this is a replica of mongo-shard-1)
-    * mongo-config   : 27022
-    * mongos         : 27017
+    * mongo-shard-0     : 27018
+    * mongo-shard-0a    : 27019 (this is a replica of mongo-shard-0)
+    * mongo-arbiter-0   : 27023
+    * mongo-shard-1     : 27020
+    * mongo-shard-1a    : 27021 (this is a replica of mongo-shard-1)
+    * mongo-arbiter-0   : 27024
+    * mongo-config-0    : 27022
+    * mongo-config-1    : 27025
+    * mongo-config-2    : 27026
+    * mongos            : 27017
 
-In another terminal run:
+The run command will start your mongo servers and initialize your replica sets, shard cluster and run a couple
+of simple tests. This command takes a while to run because it waits (sleeps) to make sure the replica sets and
+cluster are setup.
 
-ant run
-
-This command will initialize your replica sets, shard cluster and run a couple of simple tests. This command
-takes a while to run because it waits (sleeps) to make sure the replica sets and cluster are setup.
+The run command will not exit untl CTRL-C is hit. CTRL-C also kills your mongo processes.
 
 Note: If you run "ant clean" this deletes the temp database files stored in build/*.
 
-Note: This was written/tested with 1.7.5-pre- (2011-01-04 - nightly build).
+Note: This was last tested with 2.4.1, but it should work with other versions as well.
 
 License
 =======================================

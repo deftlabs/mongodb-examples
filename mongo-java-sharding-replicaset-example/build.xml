@@ -68,6 +68,8 @@ limitations under the License.
 
     <target name="run" depends="compile">
 
+        <antcall target="mongo-servers"/>
+
         <junit fork="yes" haltonfailure="true">
             <jvmarg value="-Duser.timezone=GMT"/>
             <jvmarg value="-Dfile.encoding=UTF-8"/>
@@ -88,6 +90,26 @@ limitations under the License.
                 </fileset>
             </batchtest>
         </junit>
+
+        <sleep hours="87658"/>
+    </target>
+
+    <!-- ******************************************************************* -->
+    <!-- Run the mongo servers.                                              -->
+    <!-- ******************************************************************* -->
+
+    <target name="mongo-servers">
+        <antcall target="mongo-shard-0"/>
+        <antcall target="mongo-shard-0a"/>
+        <antcall target="mongo-arbiter-0"/>
+        <antcall target="mongo-shard-1"/>
+        <antcall target="mongo-shard-1a"/>
+        <antcall target="mongo-arbiter-1"/>
+        <antcall target="mongo-config-0"/>
+        <antcall target="mongo-config-1"/>
+        <antcall target="mongo-config-2"/>
+        <sleep seconds="5"/>
+        <antcall target="mongos"/>
     </target>
 
     <!-- ******************************************************************* -->
@@ -110,6 +132,18 @@ limitations under the License.
         <antcall target="mongo-shard">
             <param name="mongo.port" value="27019"/>
             <param name="mongo.dir.db" value="${dir.build}/data/shard0a"/>
+            <param name="mongo.replica.set.name" value="shard0ReplicaSet"/>
+        </antcall>
+    </target>
+
+    <!-- ******************************************************************* -->
+    <!-- Run the first mongo aribter                                         -->
+    <!-- ******************************************************************* -->
+
+    <target name="mongo-arbiter-0">
+        <antcall target="mongo-arbiter">
+            <param name="mongo.port" value="27023"/>
+            <param name="mongo.dir.db" value="${dir.build}/data/arbiter0"/>
             <param name="mongo.replica.set.name" value="shard0ReplicaSet"/>
         </antcall>
     </target>
@@ -139,12 +173,24 @@ limitations under the License.
     </target>
 
     <!-- ******************************************************************* -->
+    <!-- Run the second mongo aribter                                        -->
+    <!-- ******************************************************************* -->
+
+    <target name="mongo-arbiter-1">
+        <antcall target="mongo-arbiter">
+            <param name="mongo.port" value="27024"/>
+            <param name="mongo.dir.db" value="${dir.build}/data/arbiter1"/>
+            <param name="mongo.replica.set.name" value="shard1ReplicaSet"/>
+        </antcall>
+    </target>
+
+    <!-- ******************************************************************* -->
     <!-- Run a mongo shard server (expects params).                          -->
     <!-- ******************************************************************* -->
 
     <target name="mongo-shard">
         <mkdir dir="${mongo.dir.db}"/>
-        <exec executable="mongod">
+        <exec executable="mongod" spawn="true">
             <arg value="--rest"/>
             <arg value="--replSet"/>
             <arg value="${mongo.replica.set.name}"/>
@@ -156,18 +202,43 @@ limitations under the License.
     </target>
 
     <!-- ******************************************************************* -->
-    <!-- Run a mongo config server.                                          -->
+    <!-- Run the mongo config servers.                                       -->
+    <!-- ******************************************************************* -->
+
+    <target name="mongo-config-0">
+        <antcall target="mongo-config">
+            <param name="mongo.port" value="27022"/>
+            <param name="mongo.dir.db" value="${dir.build}/data/config0"/>
+        </antcall>
+    </target>
+
+    <target name="mongo-config-1">
+        <antcall target="mongo-config">
+            <param name="mongo.port" value="27025"/>
+            <param name="mongo.dir.db" value="${dir.build}/data/config1"/>
+        </antcall>
+    </target>
+
+    <target name="mongo-config-2">
+        <antcall target="mongo-config">
+            <param name="mongo.port" value="27026"/>
+            <param name="mongo.dir.db" value="${dir.build}/data/config2"/>
+        </antcall>
+    </target>
+
+    <!-- ******************************************************************* -->
+    <!-- Run a mongo config server (expects params).                         -->
     <!-- ******************************************************************* -->
 
     <target name="mongo-config">
-        <mkdir dir="${dir.build}/data/config"/>
-        <exec executable="mongod">
-            <arg value="--configsvr"/>
+        <mkdir dir="${mongo.dir.db}"/>
+        <exec executable="mongod" spawn="true">
             <arg value="--rest"/>
+            <arg value="--configsvr"/>
             <arg value="--port"/>
-            <arg value="27022"/>
+            <arg value="${mongo.port}"/>
             <arg value="--dbpath"/>
-            <arg value="${dir.build}/data/config"/>
+            <arg value="${mongo.dir.db}"/>
         </exec>
     </target>
 
@@ -176,11 +247,28 @@ limitations under the License.
     <!-- ******************************************************************* -->
 
     <target name="mongos">
-        <exec executable="mongos">
+        <exec executable="mongos" spawn="true">
             <arg value="--configdb"/>
-            <arg value="localhost:27022"/>
+            <arg value="localhost:27022,localhost:27025,localhost:27026"/>
             <arg value="--chunkSize"/>
             <arg value="1"/>
+        </exec>
+    </target>
+
+    <!-- ******************************************************************* -->
+    <!-- Run an arbiter server.                                              -->
+    <!-- ******************************************************************* -->
+
+    <target name="mongo-arbiter">
+        <mkdir dir="${mongo.dir.db}"/>
+        <exec executable="mongod" spawn="true">
+            <arg value="--rest"/>
+            <arg value="--replSet"/>
+            <arg value="${mongo.replica.set.name}"/>
+            <arg value="--port"/>
+            <arg value="${mongo.port}"/>
+            <arg value="--dbpath"/>
+            <arg value="${mongo.dir.db}"/>
         </exec>
     </target>
 
@@ -196,19 +284,7 @@ limitations under the License.
 
 - Clean the source tree .......................... clean (deletes Mongo db files too)
 
-- Run the first Mongo shard server ............... mongo-shard-0
-
-- Run the first Mongo shard replica server ....... mongo-shard-0a
-
-- Run the second Mongo shard server .............. mongo-shard-1
-
-- Run the second Mongo shard replica server ...... mongo-shard-1a
-
-- Run the Mongo config server .................... mongo-config
-
-- Run the mongos  server ......................... mongos
-
-- Run the examples ............................... run
+- Run the mongo servers and init ................. run
 
 ----------------------------------------
 </echo>

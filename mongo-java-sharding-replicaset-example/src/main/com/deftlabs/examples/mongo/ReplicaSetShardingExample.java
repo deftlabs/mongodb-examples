@@ -42,30 +42,29 @@ import java.security.MessageDigest;
  */
 public final class ReplicaSetShardingExample {
 
-    @Before
-    public void setupCluster() throws Exception {
+    @Before public void setupCluster() throws Exception {
 
         // Configure the replica sets.
-        configureReplicaSet("shard0ReplicaSet", new int[] { 27018, 27019 });
+        configureReplicaSet("shard0ReplicaSet", new int[] { 27018, 27019, 27023 });
 
         Thread.sleep(61000);
 
-        configureReplicaSet("shard1ReplicaSet", new int[] { 27020, 27021 });
+        configureReplicaSet("shard1ReplicaSet", new int[] { 27020, 27021, 27024 });
 
         Thread.sleep(61000);
 
         // Connect to mongos
-        final Mongo mongo = new Mongo(new DBAddress("127.0.0.1", 27017, "admin"));
+        final Mongo mongo = new Mongo(new DBAddress("localhost", 27017, "admin"));
 
         // Add the first replica set shard.
         CommandResult result
-        = mongo.getDB("admin").command(new BasicDBObject("addshard", "shard0ReplicaSet/localhost:27018,localhost:27019"));
+        = mongo.getDB("admin").command(new BasicDBObject("addshard", "shard0ReplicaSet/localhost:27018,localhost:27019,localhost:27023"));
 
         System.out.println(result);
 
         // Add the second replica set shard.
         result
-        = mongo.getDB("admin").command(new BasicDBObject("addshard", "shard1ReplicaSet/localhost:27020,localhost:27021"));
+        = mongo.getDB("admin").command(new BasicDBObject("addshard", "shard1ReplicaSet/localhost:27020,localhost:27021,localhost:27024"));
 
         System.out.println(result);
 
@@ -74,13 +73,13 @@ public final class ReplicaSetShardingExample {
 
         // Enable sharding on a collection.
         result
-        = mongo.getDB("admin").command(new BasicDBObject("enablesharding", "test"));
+        = mongo.getDB("admin").command(new BasicDBObject("enablesharding", "testsharding"));
         System.out.println(result);
 
         final BasicDBObject shardKey = new BasicDBObject("date", 1);
         shardKey.put("hash", 1);
 
-        final BasicDBObject cmd = new BasicDBObject("shardcollection", "test.logs");
+        final BasicDBObject cmd = new BasicDBObject("shardcollection", "testsharding.logs");
         cmd.put("key", shardKey);
 
         result = mongo.getDB("admin").command(cmd);
@@ -107,12 +106,15 @@ public final class ReplicaSetShardingExample {
         for (final int port : pPorts) {
             final BasicDBObject server = new BasicDBObject("_id", idx++);
             server.put("host", ("localhost:" + port));
+
+            if (idx == 2) server.put("arbiterOnly", true);
+
             servers.add(server);
         }
 
         config.put("members", servers);
 
-        final Mongo mongo = new Mongo(new DBAddress("127.0.0.1", pPorts[0], "admin"));
+        final Mongo mongo = new Mongo(new DBAddress("localhost", pPorts[0], "admin"));
 
         final CommandResult result
         = mongo.getDB("admin").command(new BasicDBObject("replSetInitiate", config));
@@ -120,12 +122,11 @@ public final class ReplicaSetShardingExample {
         System.out.println(result);
     }
 
-    @Test
-    public void testShards() throws Exception {
+    @Test public void testShards() throws Exception {
 
-        final Mongo mongo = new Mongo(new DBAddress("127.0.0.1", 27017, "test"));
+        final Mongo mongo = new Mongo(new DBAddress("localhost", 27017, "testsharding"));
 
-        final DBCollection shardCollection = mongo.getDB("test").getCollection("logs");
+        final DBCollection shardCollection = mongo.getDB("testsharding").getCollection("logs");
 
         final Random random = new Random(System.currentTimeMillis());
 
