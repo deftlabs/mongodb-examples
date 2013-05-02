@@ -53,6 +53,9 @@ public final class ReplicaSetShardingExample {
         configureReplicaSet("shard1ReplicaSet", new int[] { 27020, 27021, 27024 });
         //configureReplicaSet("shard1ReplicaSet", new int[] { 27020 });
 
+        configureReplicaSet("shard2ReplicaSet", new int[] { 27027, 27028, 27029 });
+        //configureReplicaSet("shard2ReplicaSet", new int[] { 27027 });
+
         Thread.sleep(61000);
 
         // Connect to mongos
@@ -69,6 +72,11 @@ public final class ReplicaSetShardingExample {
         result
         = mongo.getDB("admin").command(new BasicDBObject("addshard", "shard1ReplicaSet/localhost:27020,localhost:27021,localhost:27024"));
         //= mongo.getDB("admin").command(new BasicDBObject("addshard", "shard1ReplicaSet/localhost:27020"));
+
+        // Add the third replica set shard.
+        result
+        = mongo.getDB("admin").command(new BasicDBObject("addshard", "shard2ReplicaSet/localhost:27027,localhost:27028,localhost:27029"));
+        //= mongo.getDB("admin").command(new BasicDBObject("addshard", "shard2ReplicaSet/localhost:27027"));
 
         System.out.println(result);
 
@@ -101,8 +109,6 @@ public final class ReplicaSetShardingExample {
                                         final int [] pPorts)
         throws Exception
     {
-        System.out.println("----- configureRepliaSet");
-
         // First we need to setup the replica sets.
         final BasicDBObject config = new BasicDBObject("_id", pReplicaSetName);
 
