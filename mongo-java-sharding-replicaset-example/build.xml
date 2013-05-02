@@ -102,9 +102,15 @@ limitations under the License.
         <antcall target="mongo-shard-0"/>
         <antcall target="mongo-shard-0a"/>
         <antcall target="mongo-arbiter-0"/>
+
         <antcall target="mongo-shard-1"/>
         <antcall target="mongo-shard-1a"/>
         <antcall target="mongo-arbiter-1"/>
+
+        <antcall target="mongo-shard-2"/>
+        <antcall target="mongo-shard-2a"/>
+        <antcall target="mongo-arbiter-2"/>
+
         <antcall target="mongo-config-0"/>
         <antcall target="mongo-config-1"/>
         <antcall target="mongo-config-2"/>
@@ -183,6 +189,44 @@ limitations under the License.
             <param name="mongo.replica.set.name" value="shard1ReplicaSet"/>
         </antcall>
     </target>
+
+    <!-- ******************************************************************* -->
+    <!-- Run the third mongo shard server.                                   -->
+    <!-- ******************************************************************* -->
+
+    <target name="mongo-shard-2">
+        <antcall target="mongo-shard">
+            <param name="mongo.port" value="27027"/>
+            <param name="mongo.dir.db" value="${dir.build}/data/shard2"/>
+            <param name="mongo.replica.set.name" value="shard2ReplicaSet"/>
+        </antcall>
+    </target>
+
+    <!-- ******************************************************************* -->
+    <!-- Run the third mongo shard server (replica).                         -->
+    <!-- ******************************************************************* -->
+
+    <target name="mongo-shard-2a">
+        <antcall target="mongo-shard">
+            <param name="mongo.port" value="27028"/>
+            <param name="mongo.dir.db" value="${dir.build}/data/shard2a"/>
+            <param name="mongo.replica.set.name" value="shard2ReplicaSet"/>
+        </antcall>
+    </target>
+
+    <!-- ******************************************************************* -->
+    <!-- Run the third mongo aribter                                         -->
+    <!-- ******************************************************************* -->
+
+    <target name="mongo-arbiter-2">
+        <antcall target="mongo-arbiter">
+            <param name="mongo.port" value="27029"/>
+            <param name="mongo.dir.db" value="${dir.build}/data/arbiter2"/>
+            <param name="mongo.replica.set.name" value="shard2ReplicaSet"/>
+        </antcall>
+    </target>
+
+
 
     <!-- ******************************************************************* -->
     <!-- Run a mongo shard server (expects params).                          -->
