@@ -115,7 +115,9 @@ limitations under the License.
         <antcall target="mongo-config-1"/>
         <antcall target="mongo-config-2"/>
         <sleep seconds="5"/>
-        <antcall target="mongos"/>
+        <antcall target="mongos1"/>
+        <sleep seconds="5"/>
+        <antcall target="mongos2"/>
     </target>
 
     <!-- ******************************************************************* -->
@@ -290,12 +292,25 @@ limitations under the License.
     <!-- Run a mongos server.                                                -->
     <!-- ******************************************************************* -->
 
-    <target name="mongos">
+    <target name="mongos1">
         <exec executable="mongos" spawn="true">
             <arg value="--configdb"/>
             <arg value="localhost:27022,localhost:27025,localhost:27026"/>
             <arg value="--chunkSize"/>
             <arg value="1"/>
+            <arg value="--port"/>
+            <arg value="27017"/>
+        </exec>
+    </target>
+
+    <target name="mongos2">
+        <exec executable="mongos" spawn="true">
+            <arg value="--configdb"/>
+            <arg value="localhost:27022,localhost:27025,localhost:27026"/>
+            <arg value="--chunkSize"/>
+            <arg value="1"/>
+            <arg value="--port"/>
+            <arg value="27030"/>
         </exec>
     </target>
 
