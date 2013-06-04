@@ -20,7 +20,7 @@ Open a terminal window and run:
 
 * ant run
 
-This runs two shard servers (four including the replicas), two arbiters, three config servers and a single mongos server.
+This runs three shard servers (four including the replicas), two arbiters, three config servers and two mongos servers.
 
 The ports are:
 
@@ -34,6 +34,7 @@ The ports are:
     * mongo-config-1    : 27025
     * mongo-config-2    : 27026
     * mongos            : 27017
+    * mongos            : 27030
 
 The run command will start your mongo servers and initialize your replica sets, shard cluster and run a couple
 of simple tests. This command takes a while to run because it waits (sleeps) to make sure the replica sets and
