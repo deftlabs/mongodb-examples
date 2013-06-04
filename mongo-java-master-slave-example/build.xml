@@ -71,6 +71,10 @@ limitations under the License.
         <junit fork="yes" haltonfailure="true">
             <jvmarg value="-Duser.timezone=GMT"/>
             <jvmarg value="-Dfile.encoding=UTF-8"/>
+            <jvmarg value="-DsocksProxyHost"/>
+            <jvmarg value="-DsocksProxtPort"/>
+            <jvmarg value="-Dhttps.proxyHost"/>
+            <jvmarg value="-Dhttp.proxyHost"/>
             <classpath refid="classpath.all"/>
 
             <classpath><pathelement path="${dir.build.java}"/></classpath>
