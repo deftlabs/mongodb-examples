@@ -50,7 +50,7 @@ public final class SetOnInsertTest {
         verifyData(docIds);
 
         final long execTime = System.currentTimeMillis() - startTime;
-        System.out.println("----- testWithSetOnInsert: " + execTime + " (ms)");
+        System.out.println("----- overall testWithSetOnInsert: " + execTime + " (ms)");
     }
 
 
@@ -65,7 +65,7 @@ public final class SetOnInsertTest {
         verifyData(docIds);
 
         final long execTime = System.currentTimeMillis() - startTime;
-        System.out.println("----- testWithoutSetOnInsert: " + execTime + " (ms)");
+        System.out.println("----- overall testWithoutSetOnInsert: " + execTime + " (ms)");
     }
 
     private void verifyData(final Set<ObjectId> pDocIds) {
@@ -94,6 +94,8 @@ public final class SetOnInsertTest {
 
         final Set<ObjectId> docIds = new HashSet<ObjectId>();
 
+        long totalTime = 0;
+
         for (int idx0=0; idx0 < TEST_ITERATIONS; idx0++) {
 
             final ObjectId docId = ObjectId.get();
@@ -119,6 +121,8 @@ public final class SetOnInsertTest {
             }
 
             for (int idx1=0; idx1 < TEST_UPDATES ; idx1++) {
+
+                final long startTime = System.currentTimeMillis();
                 if (pSetOnInsert) {
 
                     final BasicDBObject ops = new BasicDBObject("$inc", new BasicDBObject("counter", 1));
@@ -133,8 +137,12 @@ public final class SetOnInsertTest {
 
                     getCollection().update(new BasicDBObject("_id", docId), ops, true, false);
                 }
+
+                totalTime += (System.currentTimeMillis() - startTime);
             }
         }
+
+        System.out.println("----- time just in update: " + totalTime + " - $setOnInsert: " + pSetOnInsert);
 
         return docIds;
     }
